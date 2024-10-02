@@ -1,0 +1,17 @@
+{
+    "name": "@trinity/cli",
+    "version": "1.0.0",
+    "scripts": {
+        "start": "tsx src/index.ts"
+    },
+    "dependencies": {
+        "@clack/prompts": "^0.7.0",
+        "@koons/cli": "1.0.3",
+        "@trinity/api": "*",
+        "@trpc/client": "10.44.1"
+    },
+    "devDependencies": {
+        "@trinity/typescript-config": "*",
+        "tsx": "^4.17.0"
+    }
+}

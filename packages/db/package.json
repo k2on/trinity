@@ -1,0 +1,34 @@
+{
+    "name": "@trinity/db",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "scripts": {
+        "clean": "rm -rf .turbo node_modules",
+        "lint": "eslint .",
+        "format": "prettier --check . --ignore-path ../../.gitignore",
+        "push": "yarn with-env drizzle-kit push:mysql",
+        "studio": "yarn with-env drizzle-kit studio",
+        "dev": "yarn with-env drizzle-kit studio",
+        "typecheck": "tsc --noEmit",
+        "with-env": "dotenv -e ../../.env --"
+    },
+    "dependencies": {
+        "@planetscale/database": "^1.19.0",
+        "drizzle-orm": "^0.29.5",
+        "mysql2": "^3.11.0",
+        "pg": "^8.12.0",
+        "postgres": "^3.4.4"
+    },
+    "devDependencies": {
+        "@trinity/typescript-config": "*",
+        "dotenv-cli": "^7.4.2",
+        "drizzle-kit": "^0.20.18",
+        "eslint": "^8.56.0",
+        "prettier": "^3.1.1",
+        "typescript": "^5.3.3"
+    }
+}

@@ -1,0 +1,21 @@
+{
+    "name": "@trinity/auth",
+    "version": "1.0.0",
+    "license": "MIT",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "dependencies": {
+        "@trinity/db": "*",
+        "@koons/auth": "1.0.15",
+        "@koons/github": "1.0.14",
+        "jose": "^5.6.2"
+    },
+    "devDependencies": {
+        "@trinity/typescript-config": "*",
+        "tsup": "^8.0.1",
+        "typescript": "^5.4.5"
+    }
+}

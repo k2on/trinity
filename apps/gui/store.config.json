@@ -1,0 +1,48 @@
+{
+    "configVersion": 0,
+    "apple": {
+        "copyright": "2024 Koon Industries LLC",
+        "version": "1.0.0",
+        "release": {
+            "automaticRelease": true
+        },
+        "info": {
+            "en-US": {
+                "title": "Trinity",
+                "description": "Trinity allows you to see your friends calendar.",
+                "keywords": ["trinity", "social", "calendar", "events", "time"],
+                "privacyPolicyUrl": "https://trinity.li/legal/privacy",
+                "supportUrl": "https://trinity.li/support"
+            }
+        },
+        "categories": ["SOCIAL_NETWORKING"],
+        "review": {
+            "firstName": "Max",
+            "lastName": "Koon",
+            "phone": "XXX-XXX-XXXX",
+            "email": "max@koonindustries.com",
+            "notes": "Use the app.",
+            "demoUsername": "demo@example.com",
+            "demoPassword": "password",
+            "demoRequired": true
+        },
+        "advisory": {
+            "alcoholTobaccoOrDrugUseOrReferences": "NONE",
+            "contests": "NONE",
+            "gamblingSimulated": "NONE",
+            "horrorOrFearThemes": "NONE",
+            "matureOrSuggestiveThemes": "NONE",
+            "medicalOrTreatmentInformation": "NONE",
+            "profanityOrCrudeHumor": "NONE",
+            "sexualContentGraphicAndNudity": "NONE",
+            "sexualContentOrNudity": "NONE",
+            "violenceCartoonOrFantasy": "NONE",
+            "violenceRealistic": "NONE",
+            "violenceRealisticProlongedGraphicOrSadistic": "NONE",
+            "gambling": false,
+            "unrestrictedWebAccess": false,
+            "kidsAgeBand": null,
+            "seventeenPlus": false
+        }
+    }
+}

@@ -1,0 +1,26 @@
+{
+    "$schema": "https://turbo.build/schema.json",
+    "globalDependencies": ["**/.env.*local"],
+    "tasks": {
+        "build": {
+            "dependsOn": ["^build"],
+            "outputs": [".next/**", "!.next/cache/**"],
+            "env": ["SENTRY_AUTH_TOKEN"]
+        },
+        "lint": {
+            "dependsOn": ["^lint"]
+        },
+        "dev": {
+            "cache": false,
+            "persistent": true
+        },
+        "studio": {
+            "cache": false,
+            "persistent": true
+        },
+        "push": {
+            "cache": false,
+            "persistent": true
+        }
+    }
+}

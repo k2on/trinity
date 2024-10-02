@@ -1,0 +1,17 @@
+{
+  "installCommand": "yarn",
+  "buildCommand": "turbo build --filter=@trinity/gui --no-cache",
+  "outputDirectory": "dist/client",
+  "functions": {
+    "api/index.js": {
+      "runtime": "@vercel/node@3.0.11",
+      "includeFiles": "dist/server/**"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.js"
+    }
+  ]
+}
