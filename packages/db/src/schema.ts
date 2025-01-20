@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
-import { pgTable, primaryKey } from "drizzle-orm/pg-core";
+import { primaryKey } from "drizzle-orm/pg-core";
+import { pgTable } from "./_table";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
