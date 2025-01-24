@@ -33,7 +33,7 @@ async function getClient(userId: string) {
   const service = await db.query.CalendarService.findFirst({
     where: eq(CalendarService.userId, userId),
   });
-  if (!service) throw Error("No service");
+  if (!service) return null;
 
   const credentials = JSON.parse(
     symmetricDecrypt(service.credentials!, secret),
@@ -91,6 +91,8 @@ export const serviceRouter = {
     }),
   getEvents: protectedProcedure.query(async ({ ctx }) => {
     const client = await getClient(ctx.session.user.id);
+    if (!client) return [];
+
     const calendars = await client.fetchCalendars();
 
     const startTime = getLastSunday(new Date());
