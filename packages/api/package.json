@@ -23,7 +23,10 @@
     "@acme/db": "workspace:*",
     "@acme/validators": "workspace:*",
     "@trpc/server": "catalog:",
+    "dayjs": "^1.11.13",
+    "ical.js": "^2.1.0",
     "superjson": "2.2.1",
+    "tsdav": "2.1.2",
     "zod": "catalog:"
   },
   "devDependencies": {

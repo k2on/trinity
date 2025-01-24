@@ -1,8 +1,9 @@
 import { relations, sql } from "drizzle-orm";
 import { primaryKey } from "drizzle-orm/pg-core";
-import { pgTable } from "./_table";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+import { pgTable } from "./_table";
 
 export const Post = pgTable("post", (t) => ({
   id: t.uuid().notNull().primaryKey().defaultRandom(),
@@ -33,6 +34,7 @@ export const User = pgTable("user", (t) => ({
 
 export const UserRelations = relations(User, ({ many }) => ({
   accounts: many(Account),
+  services: many(CalendarService),
 }));
 
 export const Account = pgTable(
@@ -78,4 +80,22 @@ export const Session = pgTable("session", (t) => ({
 
 export const SessionRelations = relations(Session, ({ one }) => ({
   user: one(User, { fields: [Session.userId], references: [User.id] }),
+}));
+
+export const CalendarService = pgTable("calendar_service", (t) => ({
+  id: t.uuid().notNull().primaryKey().defaultRandom(),
+  userId: t
+    .uuid()
+    .notNull()
+    .references(() => User.id, { onDelete: "cascade" }),
+  type: t.varchar({ length: 255 }).notNull(),
+  credentials: t.varchar({ length: 255 }),
+  createdAt: t.timestamp().defaultNow().notNull(),
+  updatedAt: t
+    .timestamp({ mode: "date", withTimezone: true })
+    .$onUpdateFn(() => sql`now()`),
+}));
+
+export const ServiceRelations = relations(CalendarService, ({ one }) => ({
+  user: one(User, { fields: [CalendarService.userId], references: [User.id] }),
 }));
