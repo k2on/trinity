@@ -28,7 +28,7 @@ export type Event = {
 };
 
 async function getClient(userId: string) {
-  const secret = env.UNDERLAP_SECRET;
+  const secret = env.TRINITY_SECRET;
 
   const service = await db.query.CalendarService.findFirst({
     where: eq(CalendarService.userId, userId),
@@ -197,8 +197,7 @@ export const serviceRouter = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const secret = env.UNDERLAP_SECRET;
-      console.log("Secret", secret);
+      const secret = env.TRINITY_SECRET;
 
       const credentials = symmetricEncrypt(
         JSON.stringify({

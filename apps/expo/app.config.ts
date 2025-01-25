@@ -2,9 +2,9 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "Underlap",
-  slug: "underlap",
-  scheme: "underlap",
+  name: "Trinity",
+  slug: "trinity",
+  scheme: "trinity",
   version: "0.1.0",
   orientation: "portrait",
   icon: "./assets/icon.png",
@@ -19,11 +19,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   assetBundlePatterns: ["**/*"],
   ios: {
-    bundleIdentifier: "com.koonindustries.underlap",
+    bundleIdentifier: "com.koonindustries.trinity",
     supportsTablet: true,
   },
   android: {
-    package: "com.koonindustries.underlap",
+    package: "com.koonindustries.trinity",
     adaptiveIcon: {
       foregroundImage: "./assets/icon.png",
       backgroundColor: "#1F104A",
@@ -31,7 +31,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   extra: {
     eas: {
-      projectId: "4f809f9a-87ee-4fa0-a9f8-3f1112f19f52",
+      projectId: "24b305b0-49ea-41ef-8500-fad83a983f2e",
     },
   },
   experiments: {
