@@ -13,13 +13,17 @@ export default async function Home() {
       <div className="flex flex-row">
         <div className="flex h-screen w-64 flex-col justify-between border-r">
           <div>
-            <Image
-              className="mx-auto py-4"
-              src="/logo.png"
-              alt="logo"
-              width={100}
-              height={100}
-            />
+            <div className="flex flex-row items-center justify-center gap-1">
+              <Image
+                className="py-4 dark:invert"
+                src="/logo.png"
+                alt="logo"
+                width={20}
+                height={20}
+              />
+              <span className="font-bold">Trinity</span>
+            </div>
+
             <Friends />
           </div>
 
