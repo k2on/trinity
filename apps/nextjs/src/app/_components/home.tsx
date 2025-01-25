@@ -14,7 +14,7 @@ export default async function Home() {
         <div className="flex h-screen w-64 flex-col justify-between border-r">
           <div>
             <Image
-              className="mx-auto"
+              className="mx-auto py-4"
               src="/logo.png"
               alt="logo"
               width={100}

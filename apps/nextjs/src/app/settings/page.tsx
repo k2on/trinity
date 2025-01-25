@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@acme/ui/button";
+import { ThemeToggle } from "@acme/ui/theme";
 
 import { api } from "~/trpc/react";
 
@@ -23,6 +24,7 @@ export default function Page() {
   return (
     <div className="flex h-screen items-center justify-center">
       <div className="max-w-lg rounded-xl bg-zinc-900 p-4">
+        <ThemeToggle />
         <h1 className="text-2xl font-bold">Apple Calendar Settings</h1>
         <p>
           Generate an app specific password to use with Cal.com at{" "}
