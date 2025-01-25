@@ -38,6 +38,7 @@ async function getClient(userId: string) {
   const credentials = JSON.parse(
     symmetricDecrypt(service.credentials!, secret),
   ) as { email: string; password: string };
+  console.log("credentials", credentials);
 
   const client = await createDAVClient({
     serverUrl: "https://caldav.icloud.com",
@@ -59,6 +60,129 @@ function getLastSunday(from: Date): Date {
   const date = new Date(from.getTime() + -day * MS_DAY);
   date.setHours(0, 0, 0, 0);
   return date;
+}
+
+async function getCalendarForUser(userId: string) {
+  const client = await getClient(userId);
+
+  if (!client) return [];
+
+  const calendars = await client.fetchCalendars();
+
+  const startTime = getLastSunday(new Date());
+  const startISOString = startTime.toISOString();
+  const endTime = new Date(startTime.getTime() + 1000 * 60 * 60 * 24 * 7);
+
+  const cals: Cal[] = [];
+
+  for (const calendar of calendars) {
+    const o = await client.fetchCalendarObjects({
+      calendar,
+      timeRange: {
+        start: startTime.toISOString(),
+        end: endTime.toISOString(),
+      },
+    });
+
+    const events: Event[] = [];
+
+    for (const obj of o) {
+      if (!obj.data) continue;
+
+      const jcalData = new ICAL.Component(ICAL.parse(obj.data));
+      const vevents = jcalData.getAllSubcomponents("vevent");
+      vevents.forEach((vevent) => {
+        const event = new ICAL.Event(vevent);
+
+        if (event.isRecurring()) {
+          let maxIterations = 365;
+          if (
+            ["HOURLY", "SECONDLY", "MINUTELY"].includes(
+              event.getRecurrenceTypes(),
+            )
+          ) {
+            console.error(
+              `Won't handle [${event.getRecurrenceTypes()}] recurrence`,
+            );
+            return;
+          }
+
+          const start = dayjs(startTime);
+          const end = dayjs(endTime);
+          const startDate = ICAL.Time.fromDateTimeString(startISOString);
+          startDate.hour = event.startDate.hour;
+          startDate.minute = event.startDate.minute;
+          startDate.second = event.startDate.second;
+          const iterator = event.iterator();
+          // const iterator = event.iterator(startDate);
+          let current: ICAL.Time;
+          let currentEvent;
+          let currentStart = null;
+          let currentError;
+
+          while (
+            maxIterations > 0 &&
+            (currentStart === null || currentStart.isAfter(end) === false) &&
+            // this iterator was poorly implemented, normally done is expected to be
+            // eturned
+            (current = iterator.next())
+          ) {
+            maxIterations -= 1;
+
+            try {
+              // @see https://github.com/mozilla-comm/ical.js/issues/514
+              currentEvent = event.getOccurrenceDetails(current);
+            } catch (error) {
+              if (error instanceof Error && error.message !== currentError) {
+                currentError = error.message;
+                console.error("error", error);
+              }
+            }
+            if (!currentEvent) return;
+            // do not mix up caldav and icalendar! For the recurring events here, the timezone
+            // provided is relevant, not as pointed out in https://datatracker.ietf.org/doc/html/rfc4791#section-9.6.5
+            // where recurring events are always in utc (in caldav!). Thus, apply the time zone here.
+            //   if (vtimezone) {
+            //     const zone = new ICAL.Timezone(vtimezone);
+            //     currentEvent.startDate =
+            //       currentEvent.startDate.convertToZone(zone);
+            //     currentEvent.endDate = currentEvent.endDate.convertToZone(zone);
+            //   }
+            currentStart = dayjs(currentEvent.startDate.toJSDate());
+
+            if (currentStart.isBetween(start, end) === true) {
+              events.push({
+                name: event.summary,
+                start: currentStart.toDate(),
+                end: currentEvent.endDate.toJSDate(),
+              });
+            }
+          }
+          if (maxIterations <= 0) {
+            console.warn(
+              "could not find any occurrence for recurring event in 365 iterations",
+            );
+          }
+          return;
+        }
+
+        events.push({
+          name: event.summary,
+          start: event.startDate.toJSDate(),
+          end: event.endDate.toJSDate(),
+        });
+      });
+    }
+
+    cals.push({
+      // @ts-ignore
+      name: calendar.displayName,
+      // @ts-ignore
+      color: calendar.calendarColor,
+      events,
+    });
+  }
+  return cals;
 }
 
 export const serviceRouter = {
@@ -90,124 +214,11 @@ export const serviceRouter = {
       return true;
     }),
   getEvents: protectedProcedure.query(async ({ ctx }) => {
-    const client = await getClient(ctx.session.user.id);
-    if (!client) return [];
-
-    const calendars = await client.fetchCalendars();
-
-    const startTime = getLastSunday(new Date());
-    const startISOString = startTime.toISOString();
-    const endTime = new Date(startTime.getTime() + 1000 * 60 * 60 * 24 * 7);
-
-    const cals: Cal[] = [];
-
-    for (const calendar of calendars) {
-      const o = await client.fetchCalendarObjects({
-        calendar,
-        timeRange: {
-          start: startTime.toISOString(),
-          end: endTime.toISOString(),
-        },
-      });
-
-      const events: Event[] = [];
-
-      for (const obj of o) {
-        if (!obj.data) continue;
-
-        const jcalData = new ICAL.Component(ICAL.parse(obj.data));
-        const vevents = jcalData.getAllSubcomponents("vevent");
-        vevents.forEach((vevent) => {
-          const event = new ICAL.Event(vevent);
-
-          if (event.isRecurring()) {
-            let maxIterations = 365;
-            if (
-              ["HOURLY", "SECONDLY", "MINUTELY"].includes(
-                event.getRecurrenceTypes(),
-              )
-            ) {
-              console.error(
-                `Won't handle [${event.getRecurrenceTypes()}] recurrence`,
-              );
-              return;
-            }
-
-            const start = dayjs(startTime);
-            const end = dayjs(endTime);
-            const startDate = ICAL.Time.fromDateTimeString(startISOString);
-            startDate.hour = event.startDate.hour;
-            startDate.minute = event.startDate.minute;
-            startDate.second = event.startDate.second;
-            const iterator = event.iterator();
-            // const iterator = event.iterator(startDate);
-            let current: ICAL.Time;
-            let currentEvent;
-            let currentStart = null;
-            let currentError;
-
-            while (
-              maxIterations > 0 &&
-              (currentStart === null || currentStart.isAfter(end) === false) &&
-              // this iterator was poorly implemented, normally done is expected to be
-              // eturned
-              (current = iterator.next())
-            ) {
-              maxIterations -= 1;
-
-              try {
-                // @see https://github.com/mozilla-comm/ical.js/issues/514
-                currentEvent = event.getOccurrenceDetails(current);
-              } catch (error) {
-                if (error instanceof Error && error.message !== currentError) {
-                  currentError = error.message;
-                  console.error("error", error);
-                }
-              }
-              if (!currentEvent) return;
-              // do not mix up caldav and icalendar! For the recurring events here, the timezone
-              // provided is relevant, not as pointed out in https://datatracker.ietf.org/doc/html/rfc4791#section-9.6.5
-              // where recurring events are always in utc (in caldav!). Thus, apply the time zone here.
-              //   if (vtimezone) {
-              //     const zone = new ICAL.Timezone(vtimezone);
-              //     currentEvent.startDate =
-              //       currentEvent.startDate.convertToZone(zone);
-              //     currentEvent.endDate = currentEvent.endDate.convertToZone(zone);
-              //   }
-              currentStart = dayjs(currentEvent.startDate.toJSDate());
-
-              if (currentStart.isBetween(start, end) === true) {
-                events.push({
-                  name: event.summary,
-                  start: currentStart.toDate(),
-                  end: currentEvent.endDate.toJSDate(),
-                });
-              }
-            }
-            if (maxIterations <= 0) {
-              console.warn(
-                "could not find any occurrence for recurring event in 365 iterations",
-              );
-            }
-            return;
-          }
-
-          events.push({
-            name: event.summary,
-            start: event.startDate.toJSDate(),
-            end: event.endDate.toJSDate(),
-          });
-        });
-      }
-
-      cals.push({
-        // @ts-ignore
-        name: calendar.displayName,
-        // @ts-ignore
-        color: calendar.calendarColor,
-        events,
-      });
-    }
-    return cals;
+    return await getCalendarForUser(ctx.session.user.id);
   }),
+  getEventsByFriend: protectedProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      return await getCalendarForUser(input);
+    }),
 } satisfies TRPCRouterRecord;

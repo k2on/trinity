@@ -1,12 +1,9 @@
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { RouterOutputs } from "@acme/api";
 import { signOut } from "@acme/auth";
 import { Button } from "@acme/ui/button";
 
-import { api } from "~/trpc/react";
 import Calendar from "./calendar";
 import Friends from "./friends";
 
