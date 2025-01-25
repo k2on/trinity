@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { RouterOutputs } from "@acme/api";
+import { Button } from "@acme/ui/button";
 
 import { api } from "~/trpc/react";
 import { useSelectedFriendsStore } from "./friends";
@@ -25,9 +26,13 @@ type Cal = RouterOutputs["service"]["getEvents"][number];
 type FreeTime = { start: Date; end: Date };
 
 export default function Calendar() {
+  const [start, setStart] = useState(getLastSunday(new Date()));
   const { selected } = useSelectedFriendsStore();
   const { data: friendEvents } = api.service.getEventsByFriend.useQuery(
-    [...selected][0] || "",
+    {
+      start,
+      userId: [...selected][0] || "",
+    },
     {
       enabled: selected.size > 0,
     },
@@ -35,7 +40,9 @@ export default function Calendar() {
 
   const [now, setNow] = useState(new Date());
 
-  const { data: me } = api.service.getEvents.useQuery();
+  const { data: me } = api.service.getEvents.useQuery({
+    start,
+  });
 
   //   if (!data) return <div>Loading</div>;
 
@@ -51,8 +58,6 @@ export default function Calendar() {
     ) || [];
 
   console.log("events", events);
-
-  const start = getLastSunday(new Date());
 
   function dayEvents(date: Date) {
     const start = date;
@@ -105,7 +110,9 @@ export default function Calendar() {
         end: endOfDay,
       });
     }
-    return freeTimes;
+    return freeTimes.filter(
+      (ft) => (ft.end.getTime() - ft.start.getTime()) / (1000 * 60) >= 60,
+    );
   }
 
   useEffect(() => {
@@ -119,6 +126,38 @@ export default function Calendar() {
     <div className="flex w-full flex-row">
       <div className="relative flex w-full flex-row">
         <div className="absolute z-10 w-full border-b bg-background">
+          <div className="flex flex-row items-center justify-between px-4 pt-4">
+            <div>
+              <span className="font-bold">
+                {now.toLocaleString("default", { month: "long" })}{" "}
+              </span>
+              {now.getFullYear()}
+            </div>
+            <div>
+              <Button
+                onClick={() =>
+                  setStart((s) => new Date(s.getTime() - MS_DAY * 7))
+                }
+                variant="ghost"
+              >
+                ←
+              </Button>
+              <Button
+                onClick={() => setStart((s) => getLastSunday(new Date()))}
+                variant="ghost"
+              >
+                Today
+              </Button>
+              <Button
+                onClick={() =>
+                  setStart((s) => new Date(s.getTime() + MS_DAY * 7))
+                }
+                variant="ghost"
+              >
+                →
+              </Button>
+            </div>
+          </div>
           <div className="flex w-full flex-row">
             <div className="w-12" />
             <div className="flex w-full flex-row py-2">

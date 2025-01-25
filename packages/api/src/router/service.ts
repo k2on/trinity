@@ -62,14 +62,14 @@ function getLastSunday(from: Date): Date {
   return date;
 }
 
-async function getCalendarForUser(userId: string) {
+async function getCalendarForUser(userId: string, startTime: Date) {
   const client = await getClient(userId);
 
   if (!client) return [];
 
   const calendars = await client.fetchCalendars();
 
-  const startTime = getLastSunday(new Date());
+  //   const startTime = getLastSunday(new Date());
   const startISOString = startTime.toISOString();
   const endTime = new Date(startTime.getTime() + 1000 * 60 * 60 * 24 * 7);
 
@@ -216,12 +216,19 @@ export const serviceRouter = {
 
       return true;
     }),
-  getEvents: protectedProcedure.query(async ({ ctx }) => {
-    return await getCalendarForUser(ctx.session.user.id);
-  }),
-  getEventsByFriend: protectedProcedure
-    .input(z.string())
+  getEvents: protectedProcedure
+    .input(z.object({ start: z.date() }))
     .query(async ({ ctx, input }) => {
-      return await getCalendarForUser(input);
+      return await getCalendarForUser(ctx.session.user.id, input.start);
+    }),
+  getEventsByFriend: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        start: z.date(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return await getCalendarForUser(input.userId, input.start);
     }),
 } satisfies TRPCRouterRecord;
