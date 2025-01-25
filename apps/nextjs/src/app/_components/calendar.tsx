@@ -22,9 +22,11 @@ function getLastSunday(from: Date): Date {
 
 type Cal = RouterOutputs["service"]["getEvents"][number];
 
+type FreeTime = { start: Date; end: Date };
+
 export default function Calendar() {
   const { selected } = useSelectedFriendsStore();
-  const { data } = api.service.getEventsByFriend.useQuery(
+  const { data: friendEvents } = api.service.getEventsByFriend.useQuery(
     [...selected][0] || "",
     {
       enabled: selected.size > 0,
@@ -58,6 +60,52 @@ export default function Calendar() {
     const filtered = events.filter((e) => e.start >= start && e.end <= end);
 
     return filtered;
+  }
+
+  function dayFreeTime(date: Date): FreeTime[] {
+    if (!me) return [];
+    if (!friendEvents) return [];
+
+    const freeTimes: FreeTime[] = [];
+
+    const allEvents = [
+      ...me.flatMap((cal) => cal.events),
+      ...friendEvents.flatMap((cal) => cal.events),
+    ]
+      .sort((a, b) => a.start.getTime() - b.start.getTime())
+      .filter((e) => e.start.toDateString() == date.toDateString());
+
+    if (allEvents.length === 0) {
+      return [
+        {
+          start: new Date(date.setHours(0, 0, 0, 0)),
+          end: new Date(date.setHours(23, 59, 59, 999)),
+        },
+      ];
+    }
+
+    let currentTime = new Date(date.setHours(0, 0, 0, 0));
+    let latestEndTime = currentTime;
+
+    for (const event of allEvents) {
+      if (currentTime < event.start) {
+        freeTimes.push({
+          start: new Date(currentTime),
+          end: new Date(event.start),
+        });
+      }
+      latestEndTime = event.end > latestEndTime ? event.end : latestEndTime;
+      currentTime = latestEndTime;
+    }
+
+    const endOfDay = new Date(date.setHours(23, 59, 59, 999));
+    if (currentTime < endOfDay) {
+      freeTimes.push({
+        start: new Date(currentTime),
+        end: endOfDay,
+      });
+    }
+    return freeTimes;
   }
 
   useEffect(() => {
@@ -135,28 +183,36 @@ export default function Calendar() {
                       style={{
                         top: `calc(100vh * ${(now.getHours() * 60 + now.getMinutes()) / (60 * 24)})`,
                       }}
-                      className="absolute h-1 w-full bg-red-600 blur"
+                      className="absolute z-20 h-1 w-full bg-red-600 blur"
                     />
                     <div
                       style={{
                         top: `calc(100vh * ${(now.getHours() * 60 + now.getMinutes()) / (60 * 24)})`,
                       }}
-                      className="absolute h-1 w-full rounded-full bg-red-600"
+                      className="absolute z-20 h-1 w-full rounded-full bg-red-600"
                     />
                   </>
                 )}
 
-                {i == 8 && (
-                  <>
-                    <div
-                      style={{ top: 370, height: 90 }}
-                      className="absolute left-1 w-1 rounded-full bg-green-400"
-                    />
-                    <div
-                      style={{ top: 370, height: 90 }}
-                      className="absolute left-1 w-1 rounded-full bg-green-400 blur"
-                    />
-                  </>
+                {dayFreeTime(new Date(start.getTime() + MS_DAY * i)).map(
+                  (e) => (
+                    <>
+                      <div
+                        style={{
+                          top: `calc(100vh * ${(e.start.getHours() * 60 + e.start.getMinutes()) / (60 * 24)})`,
+                          height: `calc(100vh * ${(e.end.getTime() - e.start.getTime()) / (1000 * 60 * 60 * 24)})`,
+                        }}
+                        className="absolute left-1 w-1 rounded-full bg-green-400"
+                      />
+                      <div
+                        style={{
+                          top: `calc(100vh * ${(e.start.getHours() * 60 + e.start.getMinutes()) / (60 * 24)})`,
+                          height: `calc(100vh * ${(e.end.getTime() - e.start.getTime()) / (1000 * 60 * 60 * 24)})`,
+                        }}
+                        className="absolute left-1 w-1 rounded-full bg-green-400 blur"
+                      />
+                    </>
+                  ),
                 )}
 
                 {Array.from({ length: 24 }).map((_, j) => (

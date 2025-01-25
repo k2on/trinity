@@ -94,6 +94,9 @@ async function getCalendarForUser(userId: string) {
       vevents.forEach((vevent) => {
         const event = new ICAL.Event(vevent);
 
+        // No not push "full day" events
+        if (event.startDate.isDate) return;
+
         if (event.isRecurring()) {
           let maxIterations = 365;
           if (

@@ -66,7 +66,10 @@ function Friend({
 }) {
   return (
     <div onClick={onClick} className="flex flex-row items-center gap-2">
-      <img src={friend.image || ""} className="h-10 w-10 rounded-full" />
+      <img
+        src={friend.image || ""}
+        className={`h-10 w-10 rounded-full ${isSelected ? "border-2 border-white" : ""}`}
+      />
       <span>{friend.name}</span>
     </div>
   );
