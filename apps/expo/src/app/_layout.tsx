@@ -23,8 +23,12 @@ export default function RootLayout() {
         */}
         <Stack
           screenOptions={{
+            title: "Trinity",
+            headerTitleStyle: {
+              color: colorScheme == "dark" ? "white" : "black",
+            },
             headerStyle: {
-              backgroundColor: "#f472b6",
+              backgroundColor: colorScheme == "dark" ? "#111" : "#fff",
             },
             contentStyle: {
               backgroundColor: colorScheme == "dark" ? "#09090B" : "#FFFFFF",

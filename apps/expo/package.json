@@ -27,6 +27,8 @@
     "expo": "~51.0.38",
     "expo-constants": "~16.0.2",
     "expo-dev-client": "~4.0.28",
+    "expo-haptics": "^14.0.1",
+    "expo-image": "^2.0.4",
     "expo-linking": "~6.3.1",
     "expo-router": "~3.5.23",
     "expo-secure-store": "^13.0.2",
