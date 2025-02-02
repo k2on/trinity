@@ -27,6 +27,7 @@ export const CreatePostSchema = createInsertSchema(Post, {
 export const User = pgTable("user", (t) => ({
   id: t.uuid().notNull().primaryKey().defaultRandom(),
   name: t.varchar({ length: 255 }),
+  username: t.varchar({ length: 255 }).notNull(),
   email: t.varchar({ length: 255 }).notNull(),
   emailVerified: t.timestamp({ mode: "date", withTimezone: true }),
   image: t.varchar({ length: 255 }),
@@ -35,6 +36,7 @@ export const User = pgTable("user", (t) => ({
 export const UserRelations = relations(User, ({ many }) => ({
   accounts: many(Account),
   services: many(CalendarService),
+  following: many(Follow),
 }));
 
 export const Account = pgTable(
@@ -98,4 +100,32 @@ export const CalendarService = pgTable("calendar_service", (t) => ({
 
 export const ServiceRelations = relations(CalendarService, ({ one }) => ({
   user: one(User, { fields: [CalendarService.userId], references: [User.id] }),
+}));
+
+export const Follow = pgTable(
+  "follow",
+  (t) => ({
+    userId: t
+      .uuid()
+      .notNull()
+      .references(() => User.id, { onDelete: "cascade" }),
+    followingId: t
+      .uuid()
+      .notNull()
+      .references(() => User.id, { onDelete: "cascade" }),
+    createdAt: t.timestamp().defaultNow().notNull(),
+    updatedAt: t
+      .timestamp({ mode: "date", withTimezone: true })
+      .$onUpdateFn(() => sql`now()`),
+  }),
+  (follow) => ({
+    compoundKey: primaryKey({
+      columns: [follow.userId, follow.followingId],
+    }),
+  }),
+);
+
+export const FollowRelations = relations(Follow, ({ one }) => ({
+  user: one(User, { fields: [Follow.userId], references: [User.id] }),
+  following: one(User, { fields: [Follow.followingId], references: [User.id] }),
 }));

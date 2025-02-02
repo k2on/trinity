@@ -17,10 +17,22 @@ export default async function Page() {
             size="lg"
             formAction={async () => {
               "use server";
+              await signIn("apple");
+            }}
+          >
+            Apple Sign
+          </Button>
+          <br />
+          <br />
+
+          <Button
+            size="lg"
+            formAction={async () => {
+              "use server";
               await signIn("google");
             }}
           >
-            Sign in
+            Google Sign
           </Button>
         </form>
       </div>

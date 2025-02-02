@@ -4,7 +4,9 @@ import type {
   Session as NextAuthSession,
 } from "next-auth";
 import { skipCSRFCheck } from "@auth/core";
+import { Adapter } from "@auth/core/adapters";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import Apple from "next-auth/providers/apple";
 import Google from "next-auth/providers/google";
 
 import { db } from "@acme/db/client";
@@ -26,6 +28,16 @@ const adapter = DrizzleAdapter(db, {
   sessionsTable: Session,
 });
 
+const originalCreateUser = adapter.createUser!;
+
+adapter.createUser = async (user) => {
+  return originalCreateUser({
+    ...user,
+    // @ts-ignore
+    username: user.id,
+  });
+};
+
 export const isSecureContext = env.NODE_ENV !== "development";
 
 export const authConfig = {
@@ -38,7 +50,7 @@ export const authConfig = {
       }
     : {}),
   secret: env.AUTH_SECRET,
-  providers: [Google],
+  providers: [Google, Apple],
   callbacks: {
     session: (opts) => {
       if (!("user" in opts))
