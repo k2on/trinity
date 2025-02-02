@@ -19,7 +19,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   assetBundlePatterns: ["**/*"],
   ios: {
-    buildNumber: "3",
+    buildNumber: "4",
     bundleIdentifier: "com.koonindustries.trinity",
     supportsTablet: true,
     infoPlist: {
