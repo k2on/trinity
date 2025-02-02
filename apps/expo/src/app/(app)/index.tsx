@@ -16,13 +16,18 @@ import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { useColorScheme } from "nativewind";
 
 import { api, RouterOutputs } from "~/utils/api";
+import { useSignOut } from "~/utils/auth";
 
 const { width, height: HEIGHT } = Dimensions.get("window");
 const height = HEIGHT - 300;
 
 type Cal = RouterOutputs["service"]["getEvents"][number];
 
-type FreeTime = { start: Date; end: Date };
+type CalMarking = {
+  marking: "free" | { name: string };
+  start: Date;
+  end: Date;
+};
 
 const Page =
   (
@@ -45,14 +50,14 @@ const Page =
         )
         .filter((e) => e.start.toDateString() == day.toDateString()) || [];
 
-    function dayFreeTime(date: Date): FreeTime[] {
+    function dayFreeTime(date: Date): CalMarking[] {
       if (data.length == 0) return [];
       if (friendEvents.length == 0) return [];
 
-      const freeTimes: FreeTime[] = [];
+      const freeTimes: CalMarking[] = [];
 
       const allEvents = [
-        ...data.flatMap((cal) => cal.events),
+        // ...data.flatMap((cal) => cal.events),
         ...friendEvents.flatMap((cal) => cal.events),
       ]
         .sort((a, b) => a.start.getTime() - b.start.getTime())
@@ -61,6 +66,7 @@ const Page =
       if (allEvents.length === 0) {
         return [
           {
+            marking: "free",
             start: new Date(date.setHours(0, 0, 0, 0)),
             end: new Date(date.setHours(23, 59, 59, 999)),
           },
@@ -73,6 +79,7 @@ const Page =
       for (const event of allEvents) {
         if (currentTime < event.start) {
           freeTimes.push({
+            marking: "free",
             start: new Date(currentTime),
             end: new Date(event.start),
           });
@@ -84,6 +91,7 @@ const Page =
       const endOfDay = new Date(date.setHours(23, 59, 59, 999));
       if (currentTime < endOfDay) {
         freeTimes.push({
+          marking: "free",
           start: new Date(currentTime),
           end: endOfDay,
         });
@@ -110,7 +118,7 @@ const Page =
                   ((event.start.getHours() * 60 + event.start.getMinutes()) /
                     (60 * 24)),
                 borderLeftColor: event.calendar.color,
-                width: width - 50,
+                width: width - 70,
               }}
               className="absolute ml-12 border-l bg-zinc-800 px-2 pt-2"
             >
@@ -131,8 +139,9 @@ const Page =
                   height *
                   ((event.start.getHours() * 60 + event.start.getMinutes()) /
                     (60 * 24)),
+                right: 0,
               }}
-              className="absolute ml-12 w-1 rounded-full border-l bg-green-400 px-2 pt-2"
+              className="absolute ml-12 w-1 border-l bg-green-400 px-2 pt-2"
             ></View>
           ))}
         </View>
@@ -190,6 +199,7 @@ export default function App() {
   const { data: friends } = api.friends.list.useQuery();
 
   const { colorScheme } = useColorScheme();
+  const signOut = useSignOut();
 
   return (
     <View className="flex-1">
@@ -232,6 +242,12 @@ export default function App() {
               ))}
             </Text>
           </View>
+          <Button
+            onPress={() => {
+              signOut();
+            }}
+            title="Logout"
+          />
         </BottomSheetView>
       </BottomSheet>
     </View>

@@ -2,10 +2,13 @@ import { Button, SafeAreaView, Text } from "react-native";
 import { Slot } from "expo-router";
 
 import { api } from "~/utils/api";
-import { signIn, useUser } from "~/utils/auth";
+import { useSignIn } from "~/utils/auth";
+// import { signIn, useUser } from "~/utils/auth";
 import { getToken } from "~/utils/session-store";
 
 export default function Layout() {
+  const signIn = useSignIn();
+
   const { data, isLoading } = api.auth.getSession.useQuery();
   if (isLoading)
     return (

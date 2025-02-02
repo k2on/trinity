@@ -50,7 +50,7 @@ export const authConfig = {
       }
     : {}),
   secret: env.AUTH_SECRET,
-  providers: [Google, Apple],
+  providers: [Apple, Google],
   callbacks: {
     session: (opts) => {
       if (!("user" in opts))
