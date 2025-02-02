@@ -51,54 +51,50 @@ const Page =
         .filter((e) => e.start.toDateString() == day.toDateString()) || [];
 
     function dayFreeTime(date: Date): CalMarking[] {
-      if (data.length == 0) return [];
       if (friendEvents.length == 0) return [];
+      const markings: CalMarking[] = [];
 
-      const freeTimes: CalMarking[] = [];
+      const all =
+        friendEvents
+          ?.reduce(
+            (acc, cur) => [
+              ...acc,
+              ...cur.events.map((e) => ({ ...e, calendar: cur })),
+            ],
+            [] as (Cal["events"][number] & {
+              calendar: { name: string; color: string };
+            })[],
+          )
+          .filter((e) => e.start.toDateString() == day.toDateString())
+          .sort((a, b) => a.start.getTime() - b.start.getTime()) || [];
 
-      const allEvents = [
-        // ...data.flatMap((cal) => cal.events),
-        ...friendEvents.flatMap((cal) => cal.events),
-      ]
-        .sort((a, b) => a.start.getTime() - b.start.getTime())
-        .filter((e) => e.start.toDateString() == date.toDateString());
+      const start = new Date(date.getTime());
+      start.setHours(0, 0, 0);
 
-      if (allEvents.length === 0) {
-        return [
-          {
-            marking: "free",
-            start: new Date(date.setHours(0, 0, 0, 0)),
-            end: new Date(date.setHours(23, 59, 59, 999)),
-          },
-        ];
-      }
-
-      let currentTime = new Date(date.setHours(0, 0, 0, 0));
-      let latestEndTime = currentTime;
-
-      for (const event of allEvents) {
-        if (currentTime < event.start) {
-          freeTimes.push({
-            marking: "free",
-            start: new Date(currentTime),
-            end: new Date(event.start),
-          });
-        }
-        latestEndTime = event.end > latestEndTime ? event.end : latestEndTime;
-        currentTime = latestEndTime;
-      }
-
-      const endOfDay = new Date(date.setHours(23, 59, 59, 999));
-      if (currentTime < endOfDay) {
-        freeTimes.push({
+      let curr = start;
+      for (const event of all) {
+        markings.push({
           marking: "free",
-          start: new Date(currentTime),
-          end: endOfDay,
+          start: curr,
+          end: event.start,
         });
+        markings.push({
+          marking: { name: event.name },
+          start: event.start,
+          end: event.end,
+        });
+        curr = event.end;
       }
-      return freeTimes.filter(
-        (ft) => (ft.end.getTime() - ft.start.getTime()) / (1000 * 60) >= 60,
-      );
+      const end = new Date(date.getTime());
+      end.setHours(23, 59, 59);
+
+      markings.push({
+        marking: "free",
+        start: curr,
+        end,
+      });
+
+      return markings;
     }
 
     const freeTimes = dayFreeTime(day);
@@ -140,8 +136,9 @@ const Page =
                   ((event.start.getHours() * 60 + event.start.getMinutes()) /
                     (60 * 24)),
                 right: 0,
+                backgroundColor: event.marking == "free" ? "lime" : "gray",
               }}
-              className="absolute ml-12 w-1 border-l bg-green-400 px-2 pt-2"
+              className="absolute ml-12 w-1 border-l px-2 pt-2"
             ></View>
           ))}
         </View>

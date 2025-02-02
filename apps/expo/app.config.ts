@@ -19,10 +19,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   updates: {
     fallbackToCacheTimeout: 0,
+    url: "https://u.expo.dev/24b305b0-49ea-41ef-8500-fad83a983f2e",
   },
   assetBundlePatterns: ["**/*"],
   ios: {
-    buildNumber: "5",
+    buildNumber: "6",
     bundleIdentifier: "com.koonindustries.trinity" + ifDev(".dev"),
     supportsTablet: true,
     infoPlist: {
